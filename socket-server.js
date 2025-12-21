@@ -1,20 +1,20 @@
-import { createServer } from "node:http";
-import next from "next";
+import { createServer } from "http";
 import { Server } from "socket.io";
-// != production
 
-const dev = process.env.NODE_ENV === "production";
-const hostname = "0.0.0.0";
-const port = 3000;
-// when using middleware `hostname` and `port` must be provided below
-const app = next({ dev, hostname, port });
-const handler = app.getRequestHandler();
+const PORT = 3001;
+
+// 1️⃣ Plain HTTP server (NO Next.js here)
+const httpServer = createServer();
+
+// 2️⃣ Attach Socket.IO to raw server
+const io = new Server(httpServer, {
+  cors: {
+    origin: "http://localhost:3000", // Next.js app
+    methods: ["GET", "POST"],
+  },
+});
 
 
-app.prepare().then(() => {
-  const httpServer = createServer(handler);
-
-  const io  = new Server(httpServer);
   io.on("connection", (socket)=>{
     console.log(`user connected ${socket.id}`)
 
@@ -56,7 +56,6 @@ app.prepare().then(() => {
 
   
 
-  httpServer.listen(port,()=>{
-    console.log(`server is running on port http://${hostname}:${port}`)
+  httpServer.listen(PORT,()=>{
+    console.log(`server is running on port http://localhost:${PORT}`)
   });
-});

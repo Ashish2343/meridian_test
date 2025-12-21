@@ -33,7 +33,8 @@ const CodeEditor = ({ language, code, setLanguage, setCode }: CodeEditorProps) =
   };
 
   useEffect(() => {
-    const s = io('http://localhost:3000');
+    const s = io('http://localhost:3001');
+    console.log('Connecting to Socket.IO server...',s);
     socket.current = s;
 
     s.on('connect', () => {

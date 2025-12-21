@@ -57,11 +57,14 @@ const MeetingRoom = ({ roomId }: { roomId: string }) => {
     };
   }, []);
 
+  console.log('🔥 MeetingRoom render', roomId);
   // Socket connection for editor sync
   useEffect(() => {
+    console.log('MeetingRoom');
     if (!roomId) return;
-
+    console.log('Setting up socket for room:', roomId);
     const socket = getSocket();
+    console.log('Socket instance:', socket);
     socketRef.current = socket;
 
     socket.on('connect', () => {
