@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import {
   CallControls,
   CallParticipantsList,
@@ -11,7 +12,7 @@ import {
   useCallStateHooks,
   useCall,
 } from '@stream-io/video-react-sdk';
-import { LayoutList, Users } from 'lucide-react';
+import { Eye, LayoutList, Users } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +41,11 @@ const MeetingRoom = ({ roomId }: { roomId: string }) => {
   const [showControls, setShowControls] = useState(true);
   const hideTimeout = useRef<NodeJS.Timeout | null>(null);
   const socketRef = useRef<Socket | null>(null);
+  const { useLocalParticipant } = useCallStateHooks();
+  const localParticipant = useLocalParticipant();
+  const [isMonitoringActive, setIsMonitoringActive] = useState(false);
+
+  const isHost = localParticipant &&  call?.state.createdBy && localParticipant.userId === call.state.createdBy.id;
 
   // UI: hide/show controls on mouse move
   useEffect(() => {
@@ -83,6 +89,40 @@ const MeetingRoom = ({ roomId }: { roomId: string }) => {
       socket.disconnect();
     };
   }, [roomId]);
+
+  
+    // 1. Host Logic: Listen for notifications from the server
+  useEffect(() => {
+    if (isHost && socketRef.current) {
+      socketRef.current.on('notify-host-tab-switch', ({ userName }) => {
+        console.log('Received tab switch notification for user:', userName);
+        if (isMonitoringActive) {
+          console.log(`🚨 Host notified of tab switch by ${userName}`);
+          toast.warning(`Alert: ${userName} has switched their browser tab!`);
+        }
+      });
+    }
+    return () => {
+      socketRef.current?.off('notify-host-tab-switch');
+    };
+  }, [isHost, isMonitoringActive]);
+
+  // 2. Joinee Logic: Detect tab switches and notify the server
+  useEffect(() => {
+    if (!isHost) {
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'hidden') {
+          socketRef.current?.emit('tab-switched', { 
+            roomId, 
+            userName: localParticipant?.name || 'A joinee' 
+          });
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }
+  }, [isHost, roomId, localParticipant]);
 
   return (
     <section className="relative h-screen w-full overflow-hidden text-white bg-black">
@@ -156,6 +196,19 @@ const MeetingRoom = ({ roomId }: { roomId: string }) => {
         >
           <Image src="/icons/code.svg" alt="Code Editor" width={20} height={20} />
         </button>
+
+        {isHost && (
+          <button 
+            onClick={() => setIsMonitoringActive(!isMonitoringActive)}
+            className={cn(
+              "p-2 rounded-full transition-colors",
+              isMonitoringActive ? "bg-red-600 text-white" : "bg-zinc-700 text-zinc-300"
+            )}
+            title={isMonitoringActive ? "Stop Monitoring" : "Start Monitoring Tab Switches"}
+          >
+            <Eye size={20} />
+          </button>
+        )}
 
         {!isPersonalRoom && <EndCallButton />}
       </div>

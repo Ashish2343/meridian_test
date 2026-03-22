@@ -11,6 +11,9 @@ type Language = keyof typeof CODE_SNIPPETS
 const VerticalRightLayout = () => {
   const call = useCall()
   const participants = Array.from(call?.state.participants.values() || [])
+  
+  // Get the ID of the person who created the call (the Host)
+  const hostId = call?.state.createdBy?.id
 
   // Editor state lives HERE
   const [language, setLanguage] = useState<Language>("javascript")
@@ -50,15 +53,33 @@ const VerticalRightLayout = () => {
             hidden sm:flex
           "
         >
-          {participants.map((participant) => (
-            <div
-              key={participant.sessionId}
-              className="w-full rounded-lg overflow-hidden bg-black"
-              style={{ aspectRatio: '16/9' }}
-            >
-              <ParticipantView participant={participant} />
-            </div>
-          ))}
+          {participants.map((participant) => {
+            // Check if this specific participant is the host
+            const isHost = participant.userId === hostId;
+
+            return (
+              <div
+                key={participant.sessionId}
+                className="w-full rounded-lg overflow-hidden bg-black relative"
+                style={{ aspectRatio: '16/9' }}
+              >
+                <ParticipantView participant={participant} />
+                
+                {/* Host/Joinee Badge */}
+                <div className="absolute top-2 left-2 z-20">
+                  {isHost ? (
+                    <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md uppercase tracking-wider">
+                      Host
+                    </span>
+                  ) : (
+                    <span className="bg-zinc-700/80 text-zinc-300 text-[10px] font-medium px-2 py-0.5 rounded-full backdrop-blur-sm uppercase tracking-wider">
+                      Joinee
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </Split>
     </div>
