@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "dev:socket": "NODE_OPTIONS='--loader ts-node/esm --trace-warnings --no-warnings' ts-node server.mts"
+    "start:socket": "node socket-server.js"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.23.1",
