@@ -1,20 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
+const inter = Inter({ subsets: ["latin"] });
+
 import "./globals.css";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Toaster } from "@/components/ui/sonner"
-//import  'react-datepicker/dist/react-datepicker.css'  
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "meridian",
@@ -24,26 +15,14 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <ClerkProvider>
-      <body  className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-tr from-[#0f0f0f] via-[#121212] to-[#1a1a2e]`}
-      // style={{
-      //   backgroundColor: "red",
-      //   // backgroundRepeat: "no-repeat",
-      //   // backgroundPosition: "center",
-      //   // backgroundAttachment: "fixed", 
-      //   // backgroundSize: "cover"
-      //   }}
-      >
-        {children}
-        <Toaster/>  
-      </body>
+        <body className={`${inter.className} antialiased bg-gradient-to-tr from-[#0f0f0f] via-[#121212] to-[#1a1a2e]`}>
+          {children}
+          <Toaster/>
+        </body>
       </ClerkProvider>
     </html>
   );
