@@ -19,6 +19,8 @@ type CodeEditorProps = {
   setCode: React.Dispatch<React.SetStateAction<string>>;
 };
 
+
+const BackendPort = process.env.NEXT_PUBLIC_SOCKET_URL || '3001';
 const CodeEditor = ({ language, code, setLanguage, setCode }: CodeEditorProps) => {
   const params = useParams();
   const roomId = params.id as string;
@@ -33,7 +35,7 @@ const CodeEditor = ({ language, code, setLanguage, setCode }: CodeEditorProps) =
   };
 
   useEffect(() => {
-    const s = io('http://localhost:3001');
+    const s = io(BackendPort);
     console.log('Connecting to Socket.IO server...',s);
     socket.current = s;
 
@@ -44,6 +46,7 @@ const CodeEditor = ({ language, code, setLanguage, setCode }: CodeEditorProps) =
     });
 
     s.on('code-change', ({ code: newCode }) => {
+      console.log('code-change');
       preventEmit.current = true;
       setCode(newCode);
     });
